@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi-Agent Collaborative System | AgentTeams</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Global Top Header -->
+  <header class="app-header">
+    <div class="logo-brand" id="brand-home" style="cursor: pointer;">
+      <div class="logo-icon">🤖</div>
+      <span>Multi-Agent Orchestrator</span>
+    </div>
+    <div class="header-actions" id="header-user-actions">
+      <button class="btn btn-outline" id="btn-open-settings">⚙️ API Settings</button>
+      <span id="user-display" style="font-size: 0.9rem; color: var(--text-secondary);"></span>
+      <button class="btn btn-secondary" id="btn-logout">Sign Out</button>
+    </div>
+  </header>
+
+  <main class="view-container">
+    
+    <!-- STEP 1: AUTH VIEW -->
+    <section id="auth-view" class="auth-view">
+      <div class="auth-card">
+        <h2>Welcome Back</h2>
+        <p>Sign in to orchestrate your multi-agent teams</p>
+        
+        <div class="demo-credentials-badge">
+          💡 <strong>Demo Credentials:</strong><br>
+          Username: <code>admin</code> | Password: <code>admin123</code>
+        </div>
+
+        <form id="login-form">
+          <div class="form-group">
+            <label for="login-username">Username</label>
+            <input type="text" id="login-username" class="form-control" value="admin" required autocomplete="username">
+          </div>
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" class="form-control" value="admin123" required autocomplete="current-password">
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;" id="btn-login-submit">
+            Sign In to Dashboard &rarr;
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- STEP 1: PROJECTS DASHBOARD VIEW -->
+    <section id="dashboard-view" class="hidden">
+      <div class="dashboard-header">
+        <div class="dashboard-title-area">
+          <h1>Projects Dashboard</h1>
+          <p>Collaborative multi-agent workspaces and execution telemetry</p>
+        </div>
+        <button class="btn btn-primary" id="btn-new-project-modal">
+          ✨ + NEW PROJECT
+        </button>
+      </div>
+
+      <div class="project-grid" id="project-list-grid">
+        <!-- Project Cards will be dynamically injected here -->
+      </div>
+    </section>
+
+    <!-- STEP 3 & 4: MEETING ROOM WORKSPACE VIEW -->
+    <section id="meeting-view" class="hidden">
+      
+      <!-- Back / Nav Bar -->
+      <div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+        <button class="btn btn-secondary" id="btn-back-dashboard">
+          &larr; Back to Projects
+        </button>
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+          <div class="workspace-slider-bar">
+            <span>↔️ Enlarge Right Side:</span>
+            <input type="range" class="panel-range-slider" id="panel-width-slider" min="20" max="80" value="50" title="Slide to enlarge or shrink right panel">
+            <span id="slider-pct-label" style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--primary); font-weight: 700;">50%</span>
+          </div>
+          <button class="btn btn-danger" id="btn-delete-project">
+            🗑️ Delete Project
+          </button>
+          <button class="btn btn-success" id="btn-start-run">
+            ▶️ Run Multi-Agent Team
+          </button>
+        </div>
+      </div>
+
+      <!-- Meeting Room Top Header Card -->
+      <div class="glass-panel meeting-header">
+        <div class="meeting-title-box" style="flex: 1;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <h2 id="meeting-project-title">Project Title</h2>
+            <span id="meeting-status-badge" class="badge badge-created">Ready</span>
+          </div>
+          <p id="meeting-project-desc" style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;"></p>
+          <div style="font-size: 0.8rem; color: var(--secondary); margin-top: 0.35rem;" id="meeting-storage-info"></div>
+          <div class="meeting-progress-bar-container">
+            <div class="meeting-progress-bar" id="meeting-progress-bar"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Multi-Agent Team Roster -->
+      <div class="agent-roster" id="agent-roster">
+        <div class="agent-card" id="agent-card-Manager">
+          <div class="agent-avatar">
+            👔
+            <div class="agent-status-indicator" id="indicator-Manager"></div>
+          </div>
+          <div class="agent-info">
+            <h4>Manager Agent</h4>
+            <p id="status-text-Manager">Idle</p>
+          </div>
+        </div>
+
+        <div class="agent-card" id="agent-card-CodingWorker">
+          <div class="agent-avatar">
+            💻
+            <div class="agent-status-indicator" id="indicator-CodingWorker"></div>
+          </div>
+          <div class="agent-info">
+            <h4>Coding Worker</h4>
+            <p id="status-text-CodingWorker">Idle</p>
+          </div>
+        </div>
+
+        <div class="agent-card" id="agent-card-ResearchWorker">
+          <div class="agent-avatar">
+            🔍
+            <div class="agent-status-indicator" id="indicator-ResearchWorker"></div>
+          </div>
+          <div class="agent-info">
+            <h4>Research Worker</h4>
+            <p id="status-text-ResearchWorker">Idle</p>
+          </div>
+        </div>
+
+        <div class="agent-card" id="agent-card-TestingWorker">
+          <div class="agent-avatar">
+            🧪
+            <div class="agent-status-indicator" id="indicator-TestingWorker"></div>
+          </div>
+          <div class="agent-info">
+            <h4>Testing / QA Worker</h4>
+            <p id="status-text-TestingWorker">Idle</p>
+          </div>
+        </div>
+
+        <div class="agent-card" id="agent-card-DocumentationWorker">
+          <div class="agent-avatar">
+            📝
+            <div class="agent-status-indicator" id="indicator-DocumentationWorker"></div>
+          </div>
+          <div class="agent-info">
+            <h4>Documentation Worker</h4>
+            <p id="status-text-DocumentationWorker">Idle</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Meeting Room Grid (Live Stream + Tasks / Deliverable Hub) -->
+      <div class="meeting-workspace-grid">
+        
+        <!-- Left Column: Real-Time Meeting Room Log Stream (STEP 4) -->
+        <div class="glass-panel log-stream-card">
+          <div class="log-stream-header">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></span>
+              <strong>Live Meeting Room Transcript</strong>
+            </div>
+            <span style="font-size: 0.8rem; color: var(--text-muted);" id="stream-status">Connected</span>
+          </div>
+
+          <div class="log-messages-area" id="meeting-messages-container">
+            <!-- Real-time Agent exchanges will be appended here -->
+          </div>
+
+          <!-- Human-in-the-loop input -->
+          <form class="meeting-input-box" id="meeting-human-form">
+            <input type="text" class="form-control" id="meeting-human-input" placeholder="Chat, instruct, or brainstorm with the agents in real time..." required autocomplete="off">
+            <button type="submit" class="btn btn-primary" id="btn-send-human">Send &rarr;</button>
+          </form>
+        </div>
+
+        <!-- Draggable Resizer Divider Handle -->
+        <div class="pane-resizer" id="pane-resizer" title="Drag to resize panels"></div>
+
+        <!-- Right Column: Subtasks Pipeline, Deliverable Hub & Live IDE -->
+        <div class="glass-panel side-panel-card">
+          <div class="tabs-header">
+            <button class="tab-btn active" id="tab-btn-tasks" onclick="switchSideTab('tasks')">Subtasks Pipeline</button>
+            <button class="tab-btn" id="tab-btn-deliverable" onclick="switchSideTab('deliverable')">Deliverable Hub</button>
+            <button class="tab-btn" id="tab-btn-ide" onclick="switchSideTab('ide')">💻 Live IDE & Runner</button>
+          </div>
+
+          <!-- Tab 1: Subtasks -->
+          <div class="tab-content" id="tab-content-tasks">
+            <div id="subtasks-container">
+              <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; margin-top: 2rem;">
+                No subtasks assigned yet. Click "Run Multi-Agent Team" or instruct the Manager to decompose this project.
+              </p>
+            </div>
+          </div>
+
+          <!-- Tab 2: Deliverable Hub -->
+          <div class="tab-content hidden" id="tab-content-deliverable">
+            <div id="deliverable-container">
+              <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; margin-top: 2rem;">
+                Deliverables will be synthesized here upon completion of all worker tasks.
+              </p>
+            </div>
+          </div>
+
+          <!-- Tab 3: Live IDE, Compiler & Sandbox Runner -->
+          <div class="tab-content hidden" id="tab-content-ide">
+            <div class="ide-container">
+              <!-- IDE Toolbar -->
+              <div class="ide-toolbar">
+                <div class="ide-file-tabs" id="ide-file-tabs">
+                  <span class="ide-file-tab active" id="active-tab-indicator">📄 index.html</span>
+                </div>
+                <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                  <button class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;" id="btn-save-ide-code">
+                    💾 Save Code
+                  </button>
+                  <button class="btn btn-success" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;" id="btn-run-sandbox">
+                    ▶️ Run on Port 8080
+                  </button>
+                  <button class="btn btn-danger" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; background: #dc2626; border-color: #ef4444;" id="btn-stop-sandbox" title="Force kill any server running on port 8080">
+                    🛑 Force Stop Server
+                  </button>
+                  <a href="http://127.0.0.1:8080" target="_blank" class="btn btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;" id="btn-external-sandbox" title="Open full browser window on isolated port 8080">
+                    🌐 Open Port 8080 &rarr;
+                  </a>
+                </div>
+              </div>
+
+              <!-- Split Workspace (File Tree + Code Editor) -->
+              <div class="ide-split-workspace">
+                <!-- Sidebar File Explorer -->
+                <div class="ide-sidebar">
+                  <div class="ide-sidebar-title">📁 Project Files</div>
+                  <div id="ide-file-list">
+                    <div class="ide-tree-item active">📄 index.html</div>
+                  </div>
+                </div>
+
+                <!-- Live Editor Area -->
+                <div class="ide-editor-area">
+                  <div class="ide-editor-header">
+                    <span id="ide-current-filename">index.html</span>
+                    <span id="ide-save-status" style="color: var(--success);">● Synchronized</span>
+                  </div>
+                  <textarea class="ide-code-textarea" id="ide-code-editor" placeholder="Write or view source code here..." spellcheck="false"></textarea>
+                </div>
+              </div>
+
+              <!-- Embedded Sandbox Browser Viewport -->
+              <div class="ide-preview-pane">
+                <div class="ide-preview-bar">
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></span>
+                    <strong style="font-size: 0.8rem;">Live Sandbox Browser Viewport (Isolated Runner)</strong>
+                  </div>
+                  <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" id="btn-reload-sandbox-iframe">🔄 Refresh Viewport</button>
+                  </div>
+                </div>
+                <iframe class="ide-preview-iframe" id="ide-preview-iframe" src="about:blank"></iframe>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- + NEW PROJECT MODAL -->
+  <div class="modal-overlay hidden" id="new-project-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>✨ Create New Multi-Agent Project</h3>
+        <button class="close-btn" id="btn-close-project-modal">&times;</button>
+      </div>
+      <form id="new-project-form">
+        <div class="form-group">
+          <label for="new-project-title">Project Name</label>
+          <input type="text" id="new-project-title" class="form-control" placeholder="e.g. Live Weather Dashboard" required>
+        </div>
+        <div class="form-group">
+          <label for="new-project-path">Target Storage Path / Folder Location</label>
+          <input type="text" id="new-project-path" class="form-control" placeholder="/Volumes/VAIBHAV/major project/generated_projects/my-app" required>
+          <small style="color: var(--text-muted); font-size: 0.78rem; display: block; margin-top: 0.25rem;">
+            📁 Where the worker agents will physically write the final project files and source code.
+          </small>
+        </div>
+        <div class="form-group">
+          <label for="new-project-desc">Brief Description</label>
+          <input type="text" id="new-project-desc" class="form-control" placeholder="A brief 1-2 sentence description of the project" required>
+        </div>
+        <div class="form-group">
+          <label for="new-project-goal">Goal / Initial Prompt for Manager Agent</label>
+          <textarea id="new-project-goal" class="form-control" placeholder="Describe in plain language what you want the multi-agent team to build (e.g. Create a live weather application with city search, coordinates, temperature, and wind speed)." required rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="new-project-model">AI Model Provider / Router</label>
+          <select id="new-project-model" class="form-control">
+            <option value="smart_simulation">⚡ Smart Multi-Agent Dynamic Synthesizer (Zero-Config / Free)</option>
+            <option value="gemini">Google Gemini (Gemini 1.5 Flash)</option>
+            <option value="openai">OpenAI (GPT-4o-mini)</option>
+            <option value="anthropic">Anthropic (Claude 3.5 Sonnet)</option>
+            <option value="ollama">Local Ollama (Llama 3 / Mistral)</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+          Create Workspace & Open Meeting Room &rarr;
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- API KEYS SETTINGS MODAL -->
+  <div class="modal-overlay hidden" id="settings-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>⚙️ Universal AI Gateway & Key Settings</h3>
+        <button class="close-btn" id="btn-close-settings-modal">&times;</button>
+      </div>
+      <form id="settings-form">
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+          Configure your API keys or endpoints. Keys are stored locally and passed through the Universal Context Broker.
+        </p>
+        <div class="form-group">
+          <label for="key-gemini">Google Gemini API Key</label>
+          <input type="password" id="key-gemini" class="form-control" placeholder="AIzaSy...">
+        </div>
+        <div class="form-group">
+          <label for="key-openai">OpenAI API Key</label>
+          <input type="password" id="key-openai" class="form-control" placeholder="sk-proj-...">
+        </div>
+        <div class="form-group">
+          <label for="key-anthropic">Anthropic Claude API Key</label>
+          <input type="password" id="key-anthropic" class="form-control" placeholder="sk-ant-...">
+        </div>
+        <div class="form-group">
+          <label for="key-ollama">Local Ollama Base URL</label>
+          <input type="text" id="key-ollama" class="form-control" value="http://localhost:11434">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+          Save Settings
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Weather Radar App with 7-day forecast and temperature toggle</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="weather-wrapper">
+    <div class="weather-glass-card">
+      <div class="badge">🌤️ Live Weather Hub</div>
+      <h1 id="city-title">Live Weather Radar</h1>
+      <p class="subtitle">Global Real-Time Meteorological Forecast</p>
+      
+      <div class="search-box">
+        <input type="text" id="city-input" placeholder="Search city (e.g. London, Tokyo, New York, Delhi)..." value="London">
+        <button id="search-btn" onclick="fetchWeather()">Search</button>
+      </div>
+
+      <div class="current-weather">
+        <div class="temp-val" id="temp-display">-- °C</div>
+        <div class="condition-text" id="condition-display">🌤️ Fetching live data...</div>
+        <div class="location-text" id="location-display">📍 Loading coordinates...</div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <span class="metric-label">💨 Wind Speed</span>
+          <span class="metric-value" id="wind-speed">-- km/h</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">🧭 Wind Direction</span>
+          <span class="metric-value" id="wind-dir">--°</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">🌡️ Unit Mode</span>
+          <button class="toggle-btn" id="unit-toggle" onclick="toggleUnits()">Toggle °C / °F</button>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">📡 API Source</span>
+          <span class="metric-value" style="font-size:0.85rem; color:#38bdf8;">Open-Meteo Global</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

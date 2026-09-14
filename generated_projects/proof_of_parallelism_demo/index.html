@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Build Frontend UI Components & State Reactive Layer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <div class="badge">⚡ Multi-Agent Powered</div>
+      <h1 id="main-title">Build Frontend UI Components & State Reactive Layer</h1>
+      <p class="subtitle">Full-stack synchronized application</p>
+    </header>
+
+    <main class="card">
+      <form id="item-form" class="input-group">
+        <input type="text" id="item-input" placeholder="Add a new task or entry..." required autofocus>
+        <button type="submit" id="add-btn" class="btn-primary">+ Add Item</button>
+      </form>
+
+      <div class="toolbar">
+        <span id="count-badge" class="counter">0 items</span>
+        <div class="filters">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="active">Active</button>
+          <button class="filter-btn" data-filter="completed">Completed</button>
+        </div>
+      </div>
+
+      <ul id="item-list" class="item-list"></ul>
+      <div id="empty-state" class="empty-state">✨ No items yet. Type above to add!</div>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

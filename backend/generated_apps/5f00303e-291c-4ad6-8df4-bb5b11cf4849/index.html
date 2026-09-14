@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Build a live weather application with city search and live API forecast</title>
+  <style>
+    body { margin: 0; padding: 2rem; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0b0f19; color: #f8fafc; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+  </style>
+</head>
+<body>
+  <!-- Full-Stack Live Weather Component -->
+<div class="weather-app-container" style="max-width:500px; margin:auto; background:linear-gradient(135deg, #1e293b, #0f172a); color:#fff; border-radius:16px; padding:1.5rem; box-shadow:0 10px 25px rgba(0,0,0,0.5); font-family:sans-serif;">
+  <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+    <input type="text" id="weather-city-input" placeholder="Enter city (e.g. London, Tokyo, New York)..." style="flex:1; padding:0.6rem 1rem; border-radius:8px; border:1px solid #334155; background:#0f172a; color:#fff;">
+    <button onclick="searchWeather()" style="padding:0.6rem 1.2rem; background:#38bdf8; color:#0f172a; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Search</button>
+  </div>
+  <div id="weather-display" style="text-align:center; padding:1.5rem 0;">
+    <h2 id="weather-city-name" style="margin-bottom:0.25rem;">🌤️ Live Weather Dashboard</h2>
+    <p id="weather-coords" style="color:#94a3b8; font-size:0.85rem;">Search any city to view live meteorological data</p>
+    <div id="weather-temp" style="font-size:3rem; font-weight:800; color:#38bdf8; margin:1rem 0;">-- °C</div>
+    <div id="weather-details" style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; background:rgba(255,255,255,0.05); padding:1rem; border-radius:10px; font-size:0.9rem;">
+      <div>💨 Wind: <span id="weather-wind">-- km/h</span></div>
+      <div>🧭 Wind Dir: <span id="weather-dir">--°</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+async function searchWeather() {
+  const city = document.getElementById('weather-city-input').value.trim();
+  if(!city) return;
+  try {
+    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1`);
+    const geoData = await geoRes.json();
+    if(!geoData.results || geoData.results.length === 0) { alert('City not found'); return; }
+    const { latitude, longitude, name, country } = geoData.results[0];
+    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+    const weatherData = await weatherRes.json();
+    const current = weatherData.current_weather;
+    document.getElementById('weather-city-name').textContent = `📍 ${name}, ${country}`;
+    document.getElementById('weather-coords').textContent = `Lat: ${latitude.toFixed(2)} | Lon: ${longitude.toFixed(2)}`;
+    document.getElementById('weather-temp').textContent = `${current.temperature} °C`;
+    document.getElementById('weather-wind').textContent = `${current.windspeed} km/h`;
+    document.getElementById('weather-dir').textContent = `${current.winddirection}°`;
+  } catch(e) {
+    alert('Error fetching weather: ' + e.message);
+  }
+}
+</script>
+
+</body>
+</html>

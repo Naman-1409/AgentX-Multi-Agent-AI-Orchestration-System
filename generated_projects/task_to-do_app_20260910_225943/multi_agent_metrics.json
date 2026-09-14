@@ -1,0 +1,63 @@
+{
+  "project_goal": "Build a Task To-Do App with item list and completion checkboxes",
+  "metrics": {
+    "wall_clock_seconds": 6.419,
+    "serial_sum_seconds": 7.349,
+    "concurrency_speedup": "1.14x",
+    "start_time": "2026-09-10T22:59:44.081510",
+    "end_time": "2026-09-10T22:59:50.500873"
+  },
+  "agent_timings": [
+    {
+      "worker": "DatabaseAgent",
+      "type": "database",
+      "duration_s": 1.327,
+      "start": "2026-09-10T22:59:45.288653",
+      "end": "2026-09-10T22:59:46.615722"
+    },
+    {
+      "worker": "FrontendAgent",
+      "type": "frontend",
+      "duration_s": 1.255,
+      "start": "2026-09-10T22:59:45.582552",
+      "end": "2026-09-10T22:59:46.837981"
+    },
+    {
+      "worker": "BackendAgent",
+      "type": "backend",
+      "duration_s": 1.231,
+      "start": "2026-09-10T22:59:45.854453",
+      "end": "2026-09-10T22:59:47.085936"
+    },
+    {
+      "worker": "IntegrationAgent",
+      "type": "integration",
+      "duration_s": 1.152,
+      "start": "2026-09-10T22:59:47.347902",
+      "end": "2026-09-10T22:59:48.499747"
+    },
+    {
+      "worker": "TestingAgent",
+      "type": "testing",
+      "duration_s": 1.198,
+      "start": "2026-09-10T22:59:48.790125",
+      "end": "2026-09-10T22:59:49.988294"
+    },
+    {
+      "worker": "DocumentationAgent",
+      "type": "documentation",
+      "duration_s": 1.186,
+      "start": "2026-09-10T22:59:49.077608",
+      "end": "2026-09-10T22:59:50.263943"
+    }
+  ],
+  "saved_files": [
+    "index.html",
+    "styles.css",
+    "app.js",
+    "server.py",
+    "schema.sql",
+    "test_suite.js",
+    "README.md"
+  ]
+}

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Management App with tasks and completion toggle</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-card">
+    <header class="card-header">
+      <div class="badge">⚡ Multi-Agent Application</div>
+      <h1>Task Management App with tasks and completion toggle</h1>
+      <p class="subtitle">Autonomous Full-Stack System</p>
+    </header>
+
+    <main class="card-body">
+      <form id="main-form" class="input-row">
+        <input type="text" id="main-input" placeholder="Enter record or action..." required autofocus>
+        <button type="submit" id="action-btn" class="btn-primary">+ Add Entry</button>
+      </form>
+
+      <div class="record-list" id="record-list"></div>
+      <div id="empty-state" class="empty-state">✨ Ready to begin. Enter data above!</div>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
