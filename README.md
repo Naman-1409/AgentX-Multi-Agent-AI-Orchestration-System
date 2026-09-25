@@ -1,6 +1,6 @@
-# 🤖 Multi-Agent Parallel Code Generation Platform
+# 🤖 AgentX — Multi-Agent AI Orchestration System
 
-An autonomous, collaborative Multi-Agent Code Generation Platform inspired by the Manager-Workers architecture. A user provides a plain-language project idea and receives a complete, working, production-grade application orchestrated concurrently across specialized AI agents.
+An autonomous, collaborative AI orchestration platform inspired by the Manager-Workers architecture. A user provides a plain-language project idea and receives a complete, working, production-grade application orchestrated concurrently across specialized AI agents.
 
 ---
 

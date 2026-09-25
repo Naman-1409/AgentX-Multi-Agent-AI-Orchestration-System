@@ -1,4 +1,4 @@
-// Multi-Agent Collaborative System - Frontend App Logic
+// AgentX - Frontend App Logic
 
 const API_BASE = window.location.origin;
 
@@ -227,7 +227,7 @@ function setupEventListeners() {
     });
   }
 
-  // Start Multi-Agent Run
+  // Start AgentX Run
   btnStartRun.addEventListener('click', async () => {
     if (!state.currentProject) return;
     const provider = state.currentProject.config?.model || 'smart_simulation';
@@ -243,12 +243,12 @@ function setupEventListeners() {
       if (!resp.ok) {
         alert('Failed to start orchestration run');
         btnStartRun.disabled = false;
-        btnStartRun.innerHTML = '▶️ Run Multi-Agent Team';
+        btnStartRun.innerHTML = '▶️ Run AgentX Team';
       }
     } catch (err) {
       console.error(err);
       btnStartRun.disabled = false;
-      btnStartRun.innerHTML = '▶️ Run Multi-Agent Team';
+      btnStartRun.innerHTML = '▶️ Run AgentX Team';
     }
   });
 
@@ -426,21 +426,31 @@ async function openMeetingRoom(projectId) {
     
     const storageInfo = document.getElementById('meeting-storage-info');
     if (data.project.storage_path) {
-      storageInfo.innerHTML = `📁 Storage Location: <code>${escapeHtml(data.project.storage_path)}</code>`;
+      storageInfo.innerHTML = `
+        <div class="path-pill" title="${escapeHtml(data.project.storage_path)}">
+          <span>📁 ${escapeHtml(data.project.storage_path)}</span>
+        </div>
+        <button type="button" class="btn-copy-path" onclick="copyStoragePath('${escapeHtml(data.project.storage_path)}')" title="Copy folder path">
+          📋 Copy Path
+        </button>
+      `;
     } else {
       storageInfo.innerHTML = '';
     }
 
     updateStatusBadge(data.project.status);
+    updateProgressDisplay(data.project.status === 'completed' ? 100 : (data.room_state?.progress || 0), data.project.status);
     renderInitialMeetingLogs(data.meeting_logs || []);
     renderSubtasks(data.subtasks || []);
     if (data.project.deliverable) {
       renderDeliverable(data.project.deliverable);
     } else {
       deliverableContainer.innerHTML = `
-        <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; margin-top: 2rem;">
-          Deliverables will be synthesized here upon completion of all worker tasks.
-        </p>
+        <div class="empty-state-box">
+          <div class="empty-icon">📦</div>
+          <h4>Deliverables Pending</h4>
+          <p>Deliverables, architecture reports, code files, and test results will be synthesized here upon completion of worker tasks.</p>
+        </div>
       `;
     }
 
@@ -497,7 +507,7 @@ function handleMeetingEvent(event) {
     updateAgentCard(event.agent, event.status, event.activity);
     if (event.room_state) updateRoomState(event.room_state);
   } else if (event.type === 'progress_update') {
-    document.getElementById('meeting-progress-bar').style.width = `${event.progress}%`;
+    updateProgressDisplay(event.progress, event.status);
     if (event.status) updateStatusBadge(event.status);
   } else if (event.type === 'init') {
     if (event.room_state) updateRoomState(event.room_state);
@@ -509,9 +519,28 @@ function handleMeetingEvent(event) {
   }
 }
 
+function updateProgressDisplay(progress, status) {
+  const bar = document.getElementById('meeting-progress-bar');
+  const label = document.getElementById('meeting-progress-label');
+  const pct = Math.max(0, Math.min(100, Math.round(progress || 0)));
+  if (bar) bar.style.width = `${pct}%`;
+  if (label) {
+    if (pct >= 100 || status === 'completed') {
+      label.textContent = '100% (Complete)';
+      label.style.color = 'var(--success)';
+    } else if (pct > 0) {
+      label.textContent = `${pct}%`;
+      label.style.color = 'var(--primary)';
+    } else {
+      label.textContent = 'Ready';
+      label.style.color = 'var(--text-muted)';
+    }
+  }
+}
+
 function updateRoomState(roomState) {
   if (roomState.progress !== undefined) {
-    document.getElementById('meeting-progress-bar').style.width = `${roomState.progress}%`;
+    updateProgressDisplay(roomState.progress, roomState.status);
   }
   if (roomState.agents) {
     Object.keys(roomState.agents).forEach(agentName => {
@@ -522,24 +551,50 @@ function updateRoomState(roomState) {
 }
 
 function updateAgentCard(agentName, status, activity) {
-  const indicator = document.getElementById(`indicator-${agentName}`);
-  const statusText = document.getElementById(`status-text-${agentName}`);
+  // Map potential alias variations so all cards update properly
+  const aliasMap = {
+    'Manager': 'Manager',
+    'ManagerAgent': 'Manager',
+    'Frontend': 'FrontendAgent',
+    'FrontendAgent': 'FrontendAgent',
+    'Backend': 'BackendAgent',
+    'BackendAgent': 'BackendAgent',
+    'Database': 'DatabaseAgent',
+    'DatabaseAgent': 'DatabaseAgent',
+    'Integration': 'IntegrationAgent',
+    'IntegrationAgent': 'IntegrationAgent',
+    'Testing': 'TestingAgent',
+    'TestingAgent': 'TestingAgent',
+    'TestingWorker': 'TestingAgent',
+    'Documentation': 'DocumentationAgent',
+    'DocumentationAgent': 'DocumentationAgent',
+    'DocumentationWorker': 'DocumentationAgent',
+    'CodingWorker': 'FrontendAgent',
+    'ResearchWorker': 'DatabaseAgent'
+  };
+  const targetKey = aliasMap[agentName] || agentName;
+  const indicator = document.getElementById(`indicator-${targetKey}`) || document.getElementById(`indicator-${agentName}`);
+  const statusText = document.getElementById(`status-text-${targetKey}`) || document.getElementById(`status-text-${agentName}`);
+  
   if (indicator) {
     indicator.className = `agent-status-indicator ${status}`;
   }
   if (statusText) {
-    statusText.textContent = activity || status;
+    statusText.textContent = activity || (status ? (status.charAt(0).toUpperCase() + status.slice(1)) : 'Idle');
   }
 }
 
 function updateStatusBadge(status) {
   const badge = document.getElementById('meeting-status-badge');
-  badge.className = `badge badge-${status}`;
-  badge.textContent = status.replace('_', ' ');
+  if (badge) {
+    badge.className = `badge badge-${status}`;
+    badge.textContent = status.replace('_', ' ');
+  }
 
   if (status === 'completed') {
     btnStartRun.disabled = false;
     btnStartRun.innerHTML = '🔄 Re-run Team';
+    updateProgressDisplay(100, 'completed');
     // Load deliverable
     if (state.currentProject) {
       fetch(`${API_BASE}/api/projects/${state.currentProject.id}`)
@@ -550,16 +605,25 @@ function updateStatusBadge(status) {
     }
   } else if (status === 'in_progress') {
     btnStartRun.disabled = true;
-    btnStartRun.innerHTML = '⏳ Multi-Agent Team Running...';
+    btnStartRun.innerHTML = '⏳ AgentX Team Running...';
   } else {
     btnStartRun.disabled = false;
-    btnStartRun.innerHTML = '▶️ Run Multi-Agent Team';
+    btnStartRun.innerHTML = '▶️ Run AgentX Team';
   }
 }
 
 function renderInitialMeetingLogs(logs) {
   meetingMessagesContainer.innerHTML = '';
   logs.forEach(log => appendMeetingMessage(log));
+  updateMeetingMsgCount();
+}
+
+function updateMeetingMsgCount() {
+  const countEl = document.getElementById('meeting-msg-count');
+  if (countEl) {
+    const total = meetingMessagesContainer.children.length;
+    countEl.textContent = `${total} msg${total === 1 ? '' : 's'}`;
+  }
 }
 
 function appendMeetingMessage(log) {
@@ -578,6 +642,7 @@ function appendMeetingMessage(log) {
 
   meetingMessagesContainer.appendChild(msgEl);
   meetingMessagesContainer.scrollTop = meetingMessagesContainer.scrollHeight;
+  updateMeetingMsgCount();
 }
 
 async function fetchSubtasks(projectId) {
@@ -589,7 +654,19 @@ async function fetchSubtasks(projectId) {
 }
 
 function renderSubtasks(subtasks) {
-  if (!subtasks || subtasks.length === 0) return;
+  const pill = document.getElementById('subtasks-count-pill');
+  if (pill) pill.textContent = (subtasks || []).length;
+
+  if (!subtasks || subtasks.length === 0) {
+    subtasksContainer.innerHTML = `
+      <div class="empty-state-box">
+        <div class="empty-icon">📋</div>
+        <h4>No subtasks assigned yet</h4>
+        <p>Click "Run AgentX Team" or send a prompt to the Manager to decompose this project.</p>
+      </div>
+    `;
+    return;
+  }
 
   subtasksContainer.innerHTML = '';
   subtasks.forEach(st => {
@@ -729,12 +806,21 @@ function renderIdeWorkspace() {
   const fileTabsEl = document.getElementById('ide-file-tabs');
   const codeEditorEl = document.getElementById('ide-code-editor');
   const currentFilenameEl = document.getElementById('ide-current-filename');
+  const sidebarCountEl = document.getElementById('sidebar-file-count');
+  const ideCountPill = document.getElementById('ide-files-count-pill');
+  const fileIconEl = document.getElementById('ide-file-icon');
 
   const fileKeys = Object.keys(state.ideFiles);
+
+  if (sidebarCountEl) sidebarCountEl.textContent = `${fileKeys.length} files`;
+  if (ideCountPill) ideCountPill.textContent = fileKeys.length;
+
   if (fileKeys.length === 0) {
-    fileListEl.innerHTML = '<div style="font-size:0.75rem; color:var(--text-muted); padding:0.5rem;">No files created yet. Run the Multi-Agent team to generate files.</div>';
-    fileTabsEl.innerHTML = '<span class="ide-file-tab active">📄 index.html</span>';
-    codeEditorEl.value = '<!-- Files will appear here once generated by the Multi-Agent team -->';
+    if (fileListEl) fileListEl.innerHTML = '<div style="font-size:0.75rem; color:var(--text-muted); padding:0.5rem;">No files created yet. Run the AgentX team to generate files.</div>';
+    if (fileTabsEl) fileTabsEl.innerHTML = '<span class="ide-file-tab active">📄 index.html</span>';
+    if (codeEditorEl) codeEditorEl.value = '<!-- Files will appear here once generated by the AgentX team -->';
+    if (fileIconEl) fileIconEl.textContent = '📄';
+    updateEditorGutter();
     return;
   }
 
@@ -744,36 +830,44 @@ function renderIdeWorkspace() {
   }
 
   // Render Sidebar Tree
-  fileListEl.innerHTML = '';
-  fileKeys.forEach(fn => {
-    const item = document.createElement('div');
-    item.className = `ide-tree-item ${fn === state.activeIdeFile ? 'active' : ''}`;
-    item.onclick = () => selectIdeFile(fn);
-    const icon = fn.endsWith('.html') ? '🌐' : (fn.endsWith('.js') ? '⚡' : (fn.endsWith('.css') ? '🎨' : (fn.endsWith('.md') ? '📝' : '📄')));
-    item.innerHTML = `${icon} ${escapeHtml(fn)}`;
-    fileListEl.appendChild(item);
-  });
+  if (fileListEl) {
+    fileListEl.innerHTML = '';
+    fileKeys.forEach(fn => {
+      const item = document.createElement('div');
+      item.className = `ide-tree-item ${fn === state.activeIdeFile ? 'active' : ''}`;
+      item.onclick = () => selectIdeFile(fn);
+      const icon = getFileIcon(fn);
+      item.innerHTML = `<span>${icon}</span> <span style="overflow:hidden; text-overflow:ellipsis;">${escapeHtml(fn)}</span>`;
+      fileListEl.appendChild(item);
+    });
+  }
 
   // Render Tabs
-  fileTabsEl.innerHTML = '';
-  fileKeys.forEach(fn => {
-    const tab = document.createElement('span');
-    tab.className = `ide-file-tab ${fn === state.activeIdeFile ? 'active' : ''}`;
-    tab.onclick = () => selectIdeFile(fn);
-    const icon = fn.endsWith('.html') ? '🌐' : (fn.endsWith('.js') ? '⚡' : (fn.endsWith('.css') ? '🎨' : '📄'));
-    tab.innerHTML = `${icon} ${escapeHtml(fn)}`;
-    fileTabsEl.appendChild(tab);
-  });
+  if (fileTabsEl) {
+    fileTabsEl.innerHTML = '';
+    fileKeys.forEach(fn => {
+      const tab = document.createElement('span');
+      tab.className = `ide-file-tab ${fn === state.activeIdeFile ? 'active' : ''}`;
+      tab.onclick = () => selectIdeFile(fn);
+      const icon = getFileIcon(fn);
+      tab.innerHTML = `${icon} ${escapeHtml(fn)}`;
+      fileTabsEl.appendChild(tab);
+    });
+  }
 
-  // Update Editor Content
-  currentFilenameEl.textContent = state.activeIdeFile;
-  codeEditorEl.value = state.ideFiles[state.activeIdeFile]?.content || '';
+  // Update Editor Content & Icon
+  if (currentFilenameEl) currentFilenameEl.textContent = state.activeIdeFile;
+  if (fileIconEl) fileIconEl.textContent = getFileIcon(state.activeIdeFile);
+  if (codeEditorEl) {
+    codeEditorEl.value = state.ideFiles[state.activeIdeFile]?.content || '';
+    updateEditorGutter();
+  }
 }
 
 function selectIdeFile(filename) {
   // Save in memory before switching
   const codeEditorEl = document.getElementById('ide-code-editor');
-  if (state.ideFiles[state.activeIdeFile]) {
+  if (codeEditorEl && state.ideFiles[state.activeIdeFile]) {
     state.ideFiles[state.activeIdeFile].content = codeEditorEl.value;
   }
 
@@ -807,17 +901,20 @@ async function saveIdeCode() {
       }
       saveStatusEl.textContent = '✅ Saved & Synced';
       saveStatusEl.style.color = 'var(--success)';
+      showToast(`Saved ${state.activeIdeFile} to disk`, 'success');
 
       // Auto refresh sandbox preview
       reloadSandboxIframe();
     } else {
       saveStatusEl.textContent = '❌ Save failed';
       saveStatusEl.style.color = 'var(--danger)';
+      showToast('Failed to save file to disk', 'error');
     }
   } catch (err) {
     console.error(err);
     saveStatusEl.textContent = '❌ Error';
     saveStatusEl.style.color = 'var(--danger)';
+    showToast('Error connecting to backend API', 'error');
   }
 }
 
@@ -1007,20 +1104,138 @@ function applyPanelWidth(rightPct) {
 
   const leftPct = 100 - rightPct;
 
-  if (logCard) logCard.style.flex = `0 0 calc(${leftPct}% - 10px)`;
-  if (sideCard) sideCard.style.flex = `0 0 calc(${rightPct}% - 10px)`;
+  if (logCard) logCard.style.flex = `0 0 calc(${leftPct}% - 5px)`;
+  if (sideCard) sideCard.style.flex = `0 0 calc(${rightPct}% - 5px)`;
   
   if (slider) slider.value = rightPct;
   if (sliderLabel) sliderLabel.textContent = `${rightPct}%`;
 
+  // Update layout preset buttons active state
+  document.querySelectorAll('.btn-layout-preset').forEach(btn => {
+    btn.classList.remove('active');
+    if (rightPct >= 60 && btn.textContent.includes('Code')) btn.classList.add('active');
+    else if (rightPct <= 40 && btn.textContent.includes('Chat')) btn.classList.add('active');
+    else if (rightPct > 40 && rightPct < 60 && btn.textContent.includes('50/50')) btn.classList.add('active');
+  });
+
   localStorage.setItem('workspaceRightWidthPct', rightPct.toString());
 }
+window.applyPanelWidth = applyPanelWidth;
 
-// Connect IDE UI Event Listeners
+// File Icon Lookup
+function getFileIcon(fn) {
+  if (!fn) return '📄';
+  if (fn.endsWith('.html')) return '🌐';
+  if (fn.endsWith('.js')) return '⚡';
+  if (fn.endsWith('.css')) return '🎨';
+  if (fn.endsWith('.py')) return '🐍';
+  if (fn.endsWith('.sql')) return '🗄️';
+  if (fn.endsWith('.json')) return '📊';
+  if (fn.endsWith('.md')) return '📝';
+  return '📄';
+}
+
+// Editor Line Numbers Gutter Synchronizer
+function updateEditorGutter() {
+  const textarea = document.getElementById('ide-code-editor');
+  const gutter = document.getElementById('ide-editor-gutter');
+  if (!textarea || !gutter) return;
+
+  const lines = (textarea.value || '').split('\n').length;
+  let lineNums = '';
+  for (let i = 1; i <= Math.max(1, lines); i++) {
+    lineNums += i + '\n';
+  }
+  gutter.textContent = lineNums;
+  gutter.scrollTop = textarea.scrollTop;
+}
+
+// Toast Notifications System
+window.showToast = function(message, type = 'info') {
+  let container = document.getElementById('agentx-toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'agentx-toast-container';
+    container.className = 'agentx-toast-container';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `agentx-toast toast-${type}`;
+  const icon = type === 'success' ? '✅' : (type === 'error' ? '❌' : 'ℹ️');
+  toast.innerHTML = `<span>${icon}</span><span>${escapeHtml(message)}</span>`;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(10px)';
+    toast.style.transition = 'all 0.3s ease';
+    setTimeout(() => toast.remove(), 350);
+  }, 3200);
+};
+
+// Clipboard Helpers
+window.copyStoragePath = function(path) {
+  if (!path) return;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(path).then(() => {
+      showToast('Storage folder path copied to clipboard!', 'success');
+    }).catch(() => {
+      prompt('Project Storage Path:', path);
+    });
+  } else {
+    prompt('Project Storage Path:', path);
+  }
+};
+
+window.copyCurrentEditorCode = function() {
+  const codeEditorEl = document.getElementById('ide-code-editor');
+  if (!codeEditorEl || !codeEditorEl.value) {
+    showToast('Editor is currently empty', 'info');
+    return;
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(codeEditorEl.value).then(() => {
+      showToast(`Copied ${state.activeIdeFile || 'code'} to clipboard!`, 'success');
+    });
+  }
+};
+
+// UI Interaction Helpers
+window.fillHumanInput = function(text) {
+  const input = document.getElementById('meeting-human-input');
+  if (input) {
+    input.value = text;
+    input.focus();
+  }
+};
+
+window.scrollMeetingToBottom = function() {
+  const container = document.getElementById('meeting-messages-container');
+  if (container) {
+    container.scrollTop = container.scrollHeight;
+  }
+};
+
+window.toggleIdePreview = function() {
+  const pane = document.getElementById('ide-preview-pane');
+  if (!pane) return;
+  if (pane.classList.contains('collapsed')) {
+    pane.classList.remove('collapsed');
+    showToast('Preview panel restored', 'info');
+  } else {
+    pane.classList.add('collapsed');
+    showToast('Preview panel collapsed (Editor expanded)', 'info');
+  }
+};
+
+// Connect IDE UI Event Listeners & Shortcuts
 document.addEventListener('DOMContentLoaded', () => {
   const btnSaveCode = document.getElementById('btn-save-ide-code');
   const btnRunSandbox = document.getElementById('btn-run-sandbox');
   const btnReloadIframe = document.getElementById('btn-reload-sandbox-iframe');
+  const codeEditor = document.getElementById('ide-code-editor');
+  const editorGutter = document.getElementById('ide-editor-gutter');
 
   if (btnSaveCode) btnSaveCode.addEventListener('click', saveIdeCode);
   if (btnRunSandbox) btnRunSandbox.addEventListener('click', () => {
@@ -1030,6 +1245,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   if (btnReloadIframe) btnReloadIframe.addEventListener('click', reloadSandboxIframe);
+
+  // Editor Input, Scroll & Keybindings
+  if (codeEditor) {
+    codeEditor.addEventListener('input', () => {
+      updateEditorGutter();
+    });
+
+    codeEditor.addEventListener('scroll', () => {
+      if (editorGutter) editorGutter.scrollTop = codeEditor.scrollTop;
+    });
+
+    codeEditor.addEventListener('keydown', (e) => {
+      // 1. Tab Key: Insert 2 spaces
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = codeEditor.selectionStart;
+        const end = codeEditor.selectionEnd;
+        codeEditor.value = codeEditor.value.substring(0, start) + '  ' + codeEditor.value.substring(end);
+        codeEditor.selectionStart = codeEditor.selectionEnd = start + 2;
+        updateEditorGutter();
+      }
+
+      // 2. Cmd+S / Ctrl+S: Save file
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        saveIdeCode();
+      }
+    });
+  }
 });
 
 // --- Settings Helper ---
@@ -1043,33 +1287,47 @@ async function loadSettings() {
   } catch (e) {}
 }
 
-// --- Markdown Formatter Utility ---
+// --- Enhanced Markdown Formatter Utility ---
 function formatMarkdown(text) {
   if (!text) return '';
   let html = escapeHtml(text);
 
-  // Fenced Code blocks
+  // 1. Protect code blocks from newline substitution
+  const codeBlocks = [];
   html = html.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (match, lang, code) => {
-    return `<pre><code class="language-${lang}">${code}</code></pre>`;
+    const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
+    codeBlocks.push(`<pre><code class="language-${lang || 'plaintext'}">${code}</code></pre>`);
+    return placeholder;
   });
 
-  // Inline code
+  // 2. Inline code
   html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
 
-  // Headings
-  html = html.replace(/^### (.*$)/gim, '<h4 style="margin: 0.5rem 0; font-size: 1rem;">$1</h4>');
-  html = html.replace(/^## (.*$)/gim, '<h3 style="margin: 0.75rem 0; font-size: 1.15rem;">$1</h3>');
-  html = html.replace(/^# (.*$)/gim, '<h2 style="margin: 1rem 0; font-size: 1.3rem;">$1</h2>');
+  // 3. Headings
+  html = html.replace(/^### (.*$)/gim, '<h4 style="margin: 0.6rem 0 0.25rem; font-size: 0.95rem; color: var(--primary);">$1</h4>');
+  html = html.replace(/^## (.*$)/gim, '<h3 style="margin: 0.75rem 0 0.35rem; font-size: 1.1rem; color: var(--text-primary);">$1</h3>');
+  html = html.replace(/^# (.*$)/gim, '<h2 style="margin: 0.9rem 0 0.45rem; font-size: 1.25rem; color: var(--text-primary);">$1</h2>');
 
-  // Bold & Italics
+  // 4. Bold & Italics
   html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
 
-  // Blockquotes
-  html = html.replace(/^\> (.*$)/gim, '<blockquote style="border-left: 3px solid var(--primary); padding-left: 0.75rem; margin: 0.5rem 0; color: var(--text-secondary);">$1</blockquote>');
+  // 5. Blockquotes
+  html = html.replace(/^\> (.*$)/gim, '<blockquote style="border-left: 3px solid var(--secondary); padding-left: 0.75rem; margin: 0.5rem 0; color: var(--text-secondary);">$1</blockquote>');
 
-  // Line breaks
+  // 6. Bullet lists (- or * or •)
+  html = html.replace(/^[\*\-•] (.*$)/gim, '<li style="margin-left: 1.2rem; list-style-type: disc;">$1</li>');
+
+  // 7. Numbered lists (1. , 2. )
+  html = html.replace(/^(\d+)\. (.*$)/gim, '<li style="margin-left: 1.2rem; list-style-type: decimal;">$2</li>');
+
+  // 8. Line breaks
   html = html.replace(/\n/g, '<br>');
+
+  // 9. Restore code blocks
+  codeBlocks.forEach((cb, idx) => {
+    html = html.replace(`__CODE_BLOCK_${idx}__`, cb);
+  });
 
   return html;
 }

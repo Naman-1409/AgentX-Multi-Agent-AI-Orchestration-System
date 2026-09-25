@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Multi-Agent Collaborative System | AgentTeams</title>
+  <title>AgentX | Multi-Agent AI Orchestration System</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
   <header class="app-header">
     <div class="logo-brand" id="brand-home" style="cursor: pointer;">
       <div class="logo-icon">🤖</div>
-      <span>Multi-Agent Orchestrator</span>
+      <span>AgentX</span>
     </div>
     <div class="header-actions" id="header-user-actions">
       <button class="btn btn-outline" id="btn-open-settings">⚙️ API Settings</button>
@@ -29,7 +29,7 @@
     <section id="auth-view" class="auth-view">
       <div class="auth-card">
         <h2>Welcome Back</h2>
-        <p>Sign in to orchestrate your multi-agent teams</p>
+        <p>Sign in to orchestrate your AgentX teams</p>
         
         <div class="demo-credentials-badge">
           💡 <strong>Demo Credentials:</strong><br>
@@ -57,7 +57,7 @@
       <div class="dashboard-header">
         <div class="dashboard-title-area">
           <h1>Projects Dashboard</h1>
-          <p>Collaborative multi-agent workspaces and execution telemetry</p>
+          <p>AgentX workspaces and execution telemetry</p>
         </div>
         <button class="btn btn-primary" id="btn-new-project-modal">
           ✨ + NEW PROJECT
@@ -72,95 +72,164 @@
     <!-- STEP 3 & 4: MEETING ROOM WORKSPACE VIEW -->
     <section id="meeting-view" class="hidden">
       
-      <!-- Back / Nav Bar -->
-      <div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
-        <button class="btn btn-secondary" id="btn-back-dashboard">
-          &larr; Back to Projects
-        </button>
-        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+      <!-- Workspace Navigation & Primary Action Bar -->
+      <div class="workspace-top-bar glass-panel">
+        <div class="workspace-nav-left">
+          <button class="btn btn-secondary btn-sm" id="btn-back-dashboard">
+            &larr; Projects
+          </button>
+          <div class="workspace-breadcrumbs">
+            <span class="breadcrumb-item">Projects</span>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current" id="meeting-project-title">Project Title</span>
+          </div>
+          <span id="meeting-status-badge" class="badge badge-created">Ready</span>
+        </div>
+
+        <div class="workspace-nav-center">
+          <div class="layout-preset-group">
+            <span class="layout-label">Layout:</span>
+            <button type="button" class="btn-layout-preset" onclick="applyPanelWidth(65)" title="Code Focus (35% Chat / 65% Code)">💻 Code</button>
+            <button type="button" class="btn-layout-preset active" onclick="applyPanelWidth(50)" title="Balanced (50% Chat / 50% Code)">⚖️ 50/50</button>
+            <button type="button" class="btn-layout-preset" onclick="applyPanelWidth(35)" title="Chat Focus (65% Chat / 35% Code)">💬 Chat</button>
+          </div>
           <div class="workspace-slider-bar">
-            <span>↔️ Enlarge Right Side:</span>
-            <input type="range" class="panel-range-slider" id="panel-width-slider" min="20" max="80" value="50" title="Slide to enlarge or shrink right panel">
+            <input type="range" class="panel-range-slider" id="panel-width-slider" min="20" max="80" value="50" title="Slide to adjust panel split">
             <span id="slider-pct-label" style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--primary); font-weight: 700;">50%</span>
           </div>
-          <button class="btn btn-danger" id="btn-delete-project">
-            🗑️ Delete Project
+        </div>
+
+        <div class="workspace-nav-right">
+          <button class="btn btn-danger btn-sm" id="btn-delete-project" title="Delete this project">
+            🗑️ Delete
           </button>
           <button class="btn btn-success" id="btn-start-run">
-            ▶️ Run Multi-Agent Team
+            ▶️ Run AgentX Team
           </button>
         </div>
       </div>
 
-      <!-- Meeting Room Top Header Card -->
-      <div class="glass-panel meeting-header">
-        <div class="meeting-title-box" style="flex: 1;">
-          <div style="display: flex; align-items: center; gap: 0.75rem;">
-            <h2 id="meeting-project-title">Project Title</h2>
-            <span id="meeting-status-badge" class="badge badge-created">Ready</span>
+      <!-- Project Metadata Strip & Progress -->
+      <div class="workspace-info-strip glass-panel">
+        <div class="info-strip-left">
+          <p id="meeting-project-desc" class="project-summary-text"></p>
+          <div id="meeting-storage-info" class="storage-info-wrapper"></div>
+        </div>
+        <div class="info-strip-right">
+          <div class="progress-header-row">
+            <span class="progress-title">Team Progress</span>
+            <span id="meeting-progress-label" class="progress-pct-badge">0%</span>
           </div>
-          <p id="meeting-project-desc" style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;"></p>
-          <div style="font-size: 0.8rem; color: var(--secondary); margin-top: 0.35rem;" id="meeting-storage-info"></div>
           <div class="meeting-progress-bar-container">
             <div class="meeting-progress-bar" id="meeting-progress-bar"></div>
           </div>
         </div>
       </div>
 
-      <!-- Multi-Agent Team Roster -->
+      <!-- AgentX Team Roster Bar -->
       <div class="agent-roster" id="agent-roster">
-        <div class="agent-card" id="agent-card-Manager">
+        <!-- 1. Manager Agent -->
+        <div class="agent-card" id="agent-card-Manager" title="Manager Agent: Decomposes tasks, oversees DAG scheduling, and reconciles deliverables">
           <div class="agent-avatar">
             👔
             <div class="agent-status-indicator" id="indicator-Manager"></div>
           </div>
           <div class="agent-info">
-            <h4>Manager Agent</h4>
+            <div class="agent-name-row">
+              <h4>Manager</h4>
+              <span class="agent-role-pill">Orchestrator</span>
+            </div>
             <p id="status-text-Manager">Idle</p>
           </div>
         </div>
 
-        <div class="agent-card" id="agent-card-CodingWorker">
+        <!-- 2. Frontend Agent -->
+        <div class="agent-card" id="agent-card-FrontendAgent" title="Frontend Agent: Builds responsive UI, glassmorphic styles, and interactive client state">
           <div class="agent-avatar">
-            💻
-            <div class="agent-status-indicator" id="indicator-CodingWorker"></div>
+            🎨
+            <div class="agent-status-indicator" id="indicator-FrontendAgent"></div>
           </div>
           <div class="agent-info">
-            <h4>Coding Worker</h4>
-            <p id="status-text-CodingWorker">Idle</p>
+            <div class="agent-name-row">
+              <h4>Frontend</h4>
+              <span class="agent-role-pill">UI / UX</span>
+            </div>
+            <p id="status-text-FrontendAgent">Idle</p>
           </div>
         </div>
 
-        <div class="agent-card" id="agent-card-ResearchWorker">
+        <!-- 3. Backend Agent -->
+        <div class="agent-card" id="agent-card-BackendAgent" title="Backend Agent: Crafts RESTful endpoints, CORS middleware, and business logic">
           <div class="agent-avatar">
-            🔍
-            <div class="agent-status-indicator" id="indicator-ResearchWorker"></div>
+            ⚡
+            <div class="agent-status-indicator" id="indicator-BackendAgent"></div>
           </div>
           <div class="agent-info">
-            <h4>Research Worker</h4>
-            <p id="status-text-ResearchWorker">Idle</p>
+            <div class="agent-name-row">
+              <h4>Backend</h4>
+              <span class="agent-role-pill">FastAPI</span>
+            </div>
+            <p id="status-text-BackendAgent">Idle</p>
           </div>
         </div>
 
-        <div class="agent-card" id="agent-card-TestingWorker">
+        <!-- 4. Database Agent -->
+        <div class="agent-card" id="agent-card-DatabaseAgent" title="Database Agent: Designs SQL schema, relational tables, and data models">
+          <div class="agent-avatar">
+            🗄️
+            <div class="agent-status-indicator" id="indicator-DatabaseAgent"></div>
+          </div>
+          <div class="agent-info">
+            <div class="agent-name-row">
+              <h4>Database</h4>
+              <span class="agent-role-pill">Schema</span>
+            </div>
+            <p id="status-text-DatabaseAgent">Idle</p>
+          </div>
+        </div>
+
+        <!-- 5. Integration Agent -->
+        <div class="agent-card" id="agent-card-IntegrationAgent" title="Integration Agent: Reconciles contracts, wires client to API, and unifies application">
+          <div class="agent-avatar">
+            🔗
+            <div class="agent-status-indicator" id="indicator-IntegrationAgent"></div>
+          </div>
+          <div class="agent-info">
+            <div class="agent-name-row">
+              <h4>Integration</h4>
+              <span class="agent-role-pill">Contract</span>
+            </div>
+            <p id="status-text-IntegrationAgent">Idle</p>
+          </div>
+        </div>
+
+        <!-- 6. Testing Agent -->
+        <div class="agent-card" id="agent-card-TestingAgent" title="Testing Agent: Generates automated suites, verifies edge cases and endpoints">
           <div class="agent-avatar">
             🧪
-            <div class="agent-status-indicator" id="indicator-TestingWorker"></div>
+            <div class="agent-status-indicator" id="indicator-TestingAgent"></div>
           </div>
           <div class="agent-info">
-            <h4>Testing / QA Worker</h4>
-            <p id="status-text-TestingWorker">Idle</p>
+            <div class="agent-name-row">
+              <h4>QA / Tests</h4>
+              <span class="agent-role-pill">Testing</span>
+            </div>
+            <p id="status-text-TestingAgent">Idle</p>
           </div>
         </div>
 
-        <div class="agent-card" id="agent-card-DocumentationWorker">
+        <!-- 7. Documentation Agent -->
+        <div class="agent-card" id="agent-card-DocumentationAgent" title="Documentation Agent: Creates comprehensive manuals, setup guides, and architectural diagrams">
           <div class="agent-avatar">
             📝
-            <div class="agent-status-indicator" id="indicator-DocumentationWorker"></div>
+            <div class="agent-status-indicator" id="indicator-DocumentationAgent"></div>
           </div>
           <div class="agent-info">
-            <h4>Documentation Worker</h4>
-            <p id="status-text-DocumentationWorker">Idle</p>
+            <div class="agent-name-row">
+              <h4>Docs Lead</h4>
+              <span class="agent-role-pill">Technical</span>
+            </div>
+            <p id="status-text-DocumentationAgent">Idle</p>
           </div>
         </div>
       </div>
@@ -171,21 +240,37 @@
         <!-- Left Column: Real-Time Meeting Room Log Stream (STEP 4) -->
         <div class="glass-panel log-stream-card">
           <div class="log-stream-header">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></span>
-              <strong>Live Meeting Room Transcript</strong>
+            <div class="log-header-left">
+              <span class="stream-pulse-dot"></span>
+              <strong>Live Meeting Transcript</strong>
+              <span class="stream-badge-count" id="meeting-msg-count">0 msgs</span>
             </div>
-            <span style="font-size: 0.8rem; color: var(--text-muted);" id="stream-status">Connected</span>
+            <div class="log-header-right">
+              <span style="font-size: 0.8rem; color: var(--text-muted);" id="stream-status">Connected</span>
+              <button type="button" class="btn-icon-subtle" onclick="scrollMeetingToBottom()" title="Scroll to latest">⬇</button>
+            </div>
           </div>
 
           <div class="log-messages-area" id="meeting-messages-container">
             <!-- Real-time Agent exchanges will be appended here -->
           </div>
 
+          <!-- Quick Action Prompts for Fast Interaction -->
+          <div class="chat-quick-bar">
+            <span class="quick-label">⚡ Prompts:</span>
+            <button type="button" class="quick-prompt-chip" onclick="fillHumanInput('Decompose this project goal and begin execution')">▶️ Start Execution</button>
+            <button type="button" class="quick-prompt-chip" onclick="fillHumanInput('Summarize the current progress and worker tasks')">📊 Status Summary</button>
+            <button type="button" class="quick-prompt-chip" onclick="fillHumanInput('Run verification tests on the generated code')">🧪 Verify Tests</button>
+          </div>
+
           <!-- Human-in-the-loop input -->
           <form class="meeting-input-box" id="meeting-human-form">
-            <input type="text" class="form-control" id="meeting-human-input" placeholder="Chat, instruct, or brainstorm with the agents in real time..." required autocomplete="off">
-            <button type="submit" class="btn btn-primary" id="btn-send-human">Send &rarr;</button>
+            <div class="input-with-button">
+              <input type="text" class="form-control" id="meeting-human-input" placeholder="Instruct, chat, or guide the agent team in real time..." required autocomplete="off">
+              <button type="submit" class="btn btn-primary" id="btn-send-human">
+                <span>Send</span> &rarr;
+              </button>
+            </div>
           </form>
         </div>
 
@@ -195,26 +280,38 @@
         <!-- Right Column: Subtasks Pipeline, Deliverable Hub & Live IDE -->
         <div class="glass-panel side-panel-card">
           <div class="tabs-header">
-            <button class="tab-btn active" id="tab-btn-tasks" onclick="switchSideTab('tasks')">Subtasks Pipeline</button>
-            <button class="tab-btn" id="tab-btn-deliverable" onclick="switchSideTab('deliverable')">Deliverable Hub</button>
-            <button class="tab-btn" id="tab-btn-ide" onclick="switchSideTab('ide')">💻 Live IDE & Runner</button>
+            <button class="tab-btn active" id="tab-btn-tasks" onclick="switchSideTab('tasks')">
+              <span>📋 Subtasks Pipeline</span>
+              <span class="tab-count-pill" id="subtasks-count-pill">0</span>
+            </button>
+            <button class="tab-btn" id="tab-btn-deliverable" onclick="switchSideTab('deliverable')">
+              <span>📦 Deliverable Hub</span>
+            </button>
+            <button class="tab-btn" id="tab-btn-ide" onclick="switchSideTab('ide')">
+              <span>💻 Live IDE & Runner</span>
+              <span class="tab-count-pill" id="ide-files-count-pill">0</span>
+            </button>
           </div>
 
           <!-- Tab 1: Subtasks -->
           <div class="tab-content" id="tab-content-tasks">
             <div id="subtasks-container">
-              <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; margin-top: 2rem;">
-                No subtasks assigned yet. Click "Run Multi-Agent Team" or instruct the Manager to decompose this project.
-              </p>
+              <div class="empty-state-box">
+                <div class="empty-icon">📋</div>
+                <h4>No subtasks assigned yet</h4>
+                <p>Click "Run AgentX Team" or send a prompt to the Manager to decompose this project.</p>
+              </div>
             </div>
           </div>
 
           <!-- Tab 2: Deliverable Hub -->
           <div class="tab-content hidden" id="tab-content-deliverable">
             <div id="deliverable-container">
-              <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; margin-top: 2rem;">
-                Deliverables will be synthesized here upon completion of all worker tasks.
-              </p>
+              <div class="empty-state-box">
+                <div class="empty-icon">📦</div>
+                <h4>Deliverables Pending</h4>
+                <p>Deliverables, architecture reports, code files, and test results will be synthesized here upon completion of worker tasks.</p>
+              </div>
             </div>
           </div>
 
@@ -223,22 +320,27 @@
             <div class="ide-container">
               <!-- IDE Toolbar -->
               <div class="ide-toolbar">
-                <div class="ide-file-tabs" id="ide-file-tabs">
-                  <span class="ide-file-tab active" id="active-tab-indicator">📄 index.html</span>
+                <div class="ide-toolbar-left">
+                  <div class="ide-file-tabs" id="ide-file-tabs">
+                    <span class="ide-file-tab active" id="active-tab-indicator">📄 index.html</span>
+                  </div>
                 </div>
-                <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-                  <button class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;" id="btn-save-ide-code">
+                <div class="ide-toolbar-right">
+                  <button class="btn btn-secondary btn-sm" id="btn-save-ide-code" title="Save file (Ctrl+S / Cmd+S)">
                     💾 Save Code
                   </button>
-                  <button class="btn btn-success" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;" id="btn-run-sandbox">
+                  <button class="btn btn-success btn-sm" id="btn-run-sandbox" title="Run backend on local port 8080">
                     ▶️ Run on Port 8080
                   </button>
-                  <button class="btn btn-danger" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; background: #dc2626; border-color: #ef4444;" id="btn-stop-sandbox" title="Force kill any server running on port 8080">
-                    🛑 Force Stop Server
+                  <button class="btn btn-danger btn-sm" id="btn-stop-sandbox" title="Force kill any server running on port 8080">
+                    🛑 Force Stop
                   </button>
-                  <a href="http://127.0.0.1:8080" target="_blank" class="btn btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.8rem;" id="btn-external-sandbox" title="Open full browser window on isolated port 8080">
-                    🌐 Open Port 8080 &rarr;
+                  <a href="http://127.0.0.1:8080" target="_blank" class="btn btn-outline btn-sm" id="btn-external-sandbox" title="Open preview in new tab">
+                    🌐 Port 8080 ↗
                   </a>
+                  <button type="button" class="btn btn-outline btn-sm" id="btn-toggle-preview" onclick="toggleIdePreview()" title="Toggle browser preview panel">
+                    🖥️ Preview
+                  </button>
                 </div>
               </div>
 
@@ -246,31 +348,45 @@
               <div class="ide-split-workspace">
                 <!-- Sidebar File Explorer -->
                 <div class="ide-sidebar">
-                  <div class="ide-sidebar-title">📁 Project Files</div>
-                  <div id="ide-file-list">
+                  <div class="ide-sidebar-header">
+                    <span class="ide-sidebar-title">📁 Project Files</span>
+                    <span class="ide-sidebar-count" id="sidebar-file-count">0 files</span>
+                  </div>
+                  <div id="ide-file-list" class="ide-file-list">
                     <div class="ide-tree-item active">📄 index.html</div>
                   </div>
                 </div>
 
-                <!-- Live Editor Area -->
+                <!-- Live Editor Area with Line Numbers Gutter -->
                 <div class="ide-editor-area">
                   <div class="ide-editor-header">
-                    <span id="ide-current-filename">index.html</span>
-                    <span id="ide-save-status" style="color: var(--success);">● Synchronized</span>
+                    <div class="editor-file-info">
+                      <span class="editor-file-badge" id="ide-file-icon">📄</span>
+                      <strong id="ide-current-filename">index.html</strong>
+                    </div>
+                    <div class="editor-status-info">
+                      <span id="ide-save-status" style="color: var(--success);">● Synchronized</span>
+                      <button class="btn-copy-code" onclick="copyCurrentEditorCode()" title="Copy entire file content">📋 Copy</button>
+                    </div>
                   </div>
-                  <textarea class="ide-code-textarea" id="ide-code-editor" placeholder="Write or view source code here..." spellcheck="false"></textarea>
+
+                  <!-- Synchronized Editor + Gutter Container -->
+                  <div class="editor-with-gutter">
+                    <div class="editor-gutter" id="ide-editor-gutter">1</div>
+                    <textarea class="ide-code-textarea" id="ide-code-editor" placeholder="Write or view source code here..." spellcheck="false"></textarea>
+                  </div>
                 </div>
               </div>
 
               <!-- Embedded Sandbox Browser Viewport -->
-              <div class="ide-preview-pane">
+              <div class="ide-preview-pane" id="ide-preview-pane">
                 <div class="ide-preview-bar">
                   <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></span>
-                    <strong style="font-size: 0.8rem;">Live Sandbox Browser Viewport (Isolated Runner)</strong>
+                    <span class="stream-pulse-dot"></span>
+                    <strong style="font-size: 0.8rem;">Live Sandbox Browser Viewport (Isolated Port 8080)</strong>
                   </div>
-                  <div style="display: flex; gap: 0.5rem;">
-                    <button class="btn btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" id="btn-reload-sandbox-iframe">🔄 Refresh Viewport</button>
+                  <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <button class="btn btn-outline btn-sm" style="padding: 0.2rem 0.6rem; font-size: 0.75rem;" id="btn-reload-sandbox-iframe">🔄 Refresh</button>
                   </div>
                 </div>
                 <iframe class="ide-preview-iframe" id="ide-preview-iframe" src="about:blank"></iframe>
@@ -291,7 +407,7 @@
   <div class="modal-overlay hidden" id="new-project-modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>✨ Create New Multi-Agent Project</h3>
+        <h3>✨ Create New AgentX Project</h3>
         <button class="close-btn" id="btn-close-project-modal">&times;</button>
       </div>
       <form id="new-project-form">
@@ -312,12 +428,12 @@
         </div>
         <div class="form-group">
           <label for="new-project-goal">Goal / Initial Prompt for Manager Agent</label>
-          <textarea id="new-project-goal" class="form-control" placeholder="Describe in plain language what you want the multi-agent team to build (e.g. Create a live weather application with city search, coordinates, temperature, and wind speed)." required rows="3"></textarea>
+          <textarea id="new-project-goal" class="form-control" placeholder="Describe in plain language what you want the AgentX team to build (e.g. Create a live weather application with city search, coordinates, temperature, and wind speed)." required rows="3"></textarea>
         </div>
         <div class="form-group">
           <label for="new-project-model">AI Model Provider / Router</label>
           <select id="new-project-model" class="form-control">
-            <option value="smart_simulation">⚡ Smart Multi-Agent Dynamic Synthesizer (Zero-Config / Free)</option>
+            <option value="smart_simulation">⚡ AgentX Smart Dynamic Synthesizer (Zero-Config / Free)</option>
             <option value="gemini">Google Gemini (Gemini 1.5 Flash)</option>
             <option value="openai">OpenAI (GPT-4o-mini)</option>
             <option value="anthropic">Anthropic (Claude 3.5 Sonnet)</option>
